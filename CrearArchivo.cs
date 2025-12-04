@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -12,87 +14,33 @@ namespace ManejadorArchivosWF
 {
     public partial class CrearArchivo : Form
     {
-        public List<Campo> camposDefinidos = new List<Campo>();
-        
-        public string rutaArchivo { get; private set; }
+        public List<Campo> campos = new List<Campo>();
+        //private string nombreArchivo = "";
         public CrearArchivo()
         {
             InitializeComponent();
         }
 
-        private void btn_Guardar_Click(object sender, EventArgs e)
+        public CrearArchivo(List<Campo> camposExistentes)
         {
-            string NombreArchivo = txt_NomArch.Text;
-            if (string.IsNullOrEmpty(NombreArchivo))
-            {
-                MessageBox.Show("El nombre del archivo no puede estar vacio.");
-                return;
-            }
-
-            if (camposDefinidos.Count == 0)
-            {
-                MessageBox.Show("Debe definir al menos un campo para el archivo.");
-                return;
-            }
-
-            string rutaArchivo = NombreArchivo + ".dat";
-
-            GuardarArchivo(rutaArchivo);
-
-            MessageBox.Show($"Archivo {rutaArchivo} fue creado con exito, ahora puedes agregar registros");
-
-            this.DialogResult = DialogResult.OK;
-            Close();
+            InitializeComponent();
+            this.campos = camposExistentes.ToList(); // Copia para no modificar original
+            ActualizarDataGridView();
         }
 
-        private void GuardarArchivo(string rutaArchivo)
+        private void CrearArchivo_Load(object sender, EventArgs e)
         {
-            using (BinaryWriter writer = new BinaryWriter(File.Create(rutaArchivo)))
-            {
-                // Escribir número de campos
-                writer.Write(camposDefinidos.Count);
+            cmb_TipoDato.Items.AddRange(new string[] { "Cadena", "Entero", "Decimal", "Booleano" });
+            cmb_TipoDato.SelectedIndex = -1;
+            cmb_TipoDato.Text = "<Seleccione Tipo>";
 
-                // Escribir definición de cada campo
-                foreach (var campo in camposDefinidos)
-                {
-                    writer.Write(campo.Nombre);
-                    writer.Write(campo.Tipo);
-                }
+            // Añadir columnas al DataGridView
+            dgv_Campos.Columns.Clear();
+            dgv_Campos.Columns.Add("colNombre", "Nombre");
+            dgv_Campos.Columns.Add("colTipo", "Tipo");
 
-                writer.Write(0);
-
-                this.DialogResult = DialogResult.OK;
-                Close();
-            }
-        }
-
-        private void btn_AgregarCampo_Click(object sender, EventArgs e)
-        {
-            string nombreCampo = txt_Campo.Text.Trim();
-            if (string.IsNullOrEmpty(nombreCampo))
-            {
-                MessageBox.Show("El nombre del campo no puede estar vacio.");
-                return;
-            }
-
-            if (cb_TipoDatos.SelectedIndex == -1)
-            {
-                MessageBox.Show("Debe seleccionar un tipo de dato para el campo. ");
-                return;
-            }
-
-            string tipoDato = cb_TipoDatos.SelectedItem.ToString();
-
-            camposDefinidos.Add(new Campo 
-            { 
-                Nombre = nombreCampo, 
-                Tipo =  tipoDato
-            });
-
-            txt_Campo.Clear();
-            cb_TipoDatos.Text = "<Seleccionar tipo>";
-            txt_Campo.Focus();
-
+            // Opcional: hacerlas autoajustables
+            dgv_Campos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private void btn_cancelar_Click(object sender, EventArgs e)
@@ -100,5 +48,94 @@ namespace ManejadorArchivosWF
             this.DialogResult = DialogResult.Cancel;
             this.Close();
         }
+
+        private void btn_Crear_Click(object sender, EventArgs e)
+        {
+            if (campos.Count == 0)
+            {
+                MessageBox.Show("Debe definir al menos un campo.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txt_NomArch.Text))
+            {
+                MessageBox.Show("Debe introducir el nombre del archivo.");
+                return;
+            }
+
+            string nombreArchivo = txt_NomArch.Text.Trim();
+            if (!nombreArchivo.EndsWith(".dat"))
+                nombreArchivo += ".dat";
+
+            try
+            {
+                using (FileStream fs = new FileStream(nombreArchivo, FileMode.Create, FileAccess.Write))
+                using (BinaryWriter writer = new BinaryWriter(fs))
+                {
+                    // Escribir número de campos (int)
+                    writer.Write(campos.Count);
+
+                    // Escribir cada campo: nombre (string) + tipo (string)
+                    foreach (var campo in campos)
+                    {
+                        writer.Write(campo.Nombre);
+                        writer.Write(campo.Tipo);
+                    }
+
+                    // Opcional: escribir un registro vacío o dejarlo listo para datos
+                    // Aquí solo guardamos la cabecera.
+                }
+
+                MessageBox.Show($"Estructura guardada en '{nombreArchivo}'.");
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al guardar: {ex.Message}");
+            }
+
+        }
+
+        private void btn_AgregarCampo_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txt_NombreCampo.Text))
+            {
+                MessageBox.Show("Ingrese un nombre para el campo.");
+                return;
+            }
+
+            if (cmb_TipoDato.SelectedIndex == -1)
+            {
+                MessageBox.Show("Debe seleccionar un tipo de dato.");
+                return;
+            }
+
+            string nombre = txt_NombreCampo.Text.Trim();
+            string tipo = cmb_TipoDato.SelectedItem.ToString();
+
+            campos.Add(new Campo(nombre, tipo));
+
+            // Actualizar DataGridView
+            ActualizarDataGridView();
+            txt_NombreCampo.Clear();
+            txt_NombreCampo.Focus();
+
+            // Limpiar campos
+            txt_NombreCampo.Clear();
+            cmb_TipoDato.SelectedIndex = -1;
+            cmb_TipoDato.Text = "<Seleccione Tipo>";
+        }
+        private void ActualizarDataGridView()
+        {
+            dgv_Campos.Rows.Clear();
+            foreach (var campo in campos)
+            {
+                dgv_Campos.Rows.Add(campo.Nombre, campo.Tipo);
+            }
+        }
+
+
     }
 }

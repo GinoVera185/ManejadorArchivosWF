@@ -61,6 +61,7 @@ partial class fm_ventanaInicio
         // 
         btn_Cerrar.BackColor = Color.Red;
         btn_Cerrar.Font = new Font("Verdana", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        btn_Cerrar.ForeColor = Color.Transparent;
         btn_Cerrar.Location = new Point(43, 197);
         btn_Cerrar.Name = "btn_Cerrar";
         btn_Cerrar.Size = new Size(242, 52);
@@ -73,12 +74,14 @@ partial class fm_ventanaInicio
         // 
         AutoScaleDimensions = new SizeF(8F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
+        AutoSize = true;
         BackColor = Color.FromArgb(128, 128, 255);
         ClientSize = new Size(338, 315);
         Controls.Add(btn_Cerrar);
         Controls.Add(btn_CreArch);
         Controls.Add(btn_OpArch);
         Name = "fm_ventanaInicio";
+        StartPosition = FormStartPosition.CenterScreen;
         Text = "Inicio";
         Load += Form1_Load;
         ResumeLayout(false);
