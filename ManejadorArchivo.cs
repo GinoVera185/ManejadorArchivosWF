@@ -14,7 +14,7 @@ namespace ManejadorArchivosWF
 {
     public partial class ManejadorArchivo : Form
     {
-        private List<Campo> campos = new List<Campo>();
+        public List<Campo> campos = new List<Campo>();
         private List<Registro> registros = new List<Registro>();
         private string nombreArchivo = "";
         
@@ -61,6 +61,10 @@ namespace ManejadorArchivosWF
                 while (fs.Position < fs.Length)
                 {
                     var registro = new Registro();
+
+                    int id = reader.ReadInt32();
+                    registro.ID = id;
+
                     foreach (var campo in campos)
                     {
                         object valor = null;
@@ -144,26 +148,9 @@ namespace ManejadorArchivosWF
 
         private void btn_CambiarArchivo_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog ofd = new OpenFileDialog())
-            {
-                ofd.Filter = "Archivos DAT (*.dat)|*.dat|Todos los archivos (*.*)|*.*";
-                ofd.Title = "Seleccionar archivo .dat";
-
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        nombreArchivo = ofd.FileName;
-                        ConfigurarDataGridView();
-                        ActualizarDataGridView();
-                        MessageBox.Show("Archivo cargado correctamente.");
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error al cargar el archivo: {ex.Message}");
-                    }
-                }
-            }
+            fm_ventanaInicio inicio = new fm_ventanaInicio();
+            inicio.Show();
+            this.Close();
         }
 
         private void btn_EliminarRegistro_Click(object sender, EventArgs e)
@@ -237,6 +224,9 @@ namespace ManejadorArchivosWF
                 // Escribir registros
                 foreach (var registro in registros)
                 {
+
+                    writer.Write(registro.ID);
+
                     foreach (var campo in campos)
                     {
                         var valor = registro.GetValor(campo.Nombre);
@@ -267,7 +257,23 @@ namespace ManejadorArchivosWF
 
         private void btn_AgrEditCampo_Click(object sender, EventArgs e)
         {
-            
+            if (registros.Count > 0)
+            {
+                MessageBox.Show("No se puede modificar la estructura porque hay registros existentes.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (var frm = new FormEditarCampos(campos))
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    campos = frm.Campos; // Actualizar la lista de campos
+                    ConfigurarDataGridView(); // Actualizar columnas
+                    ActualizarDataGridView(); // Actualizar filas
+                    GuardarArchivo(); // Guardar nueva estructura
+                    ActualizarEstadoBotones(); // Actualizar estado del botón
+                }
+            }
         }
 
         private void btn_EditRegistro_Click(object sender, EventArgs e)

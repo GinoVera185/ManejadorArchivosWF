@@ -21,18 +21,26 @@ public partial class fm_ventanaInicio : Form
 
     private void btn_OpArch_Click(object sender, EventArgs e)
     {
-        using (OpenFileDialog openFileDialog = new OpenFileDialog())
+        try
         {
-            openFileDialog.Filter = "Archivos DAT (*.dat)|*.dat";
-            openFileDialog.Title = "Abrir archivo .dat";
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                ManejadorArchivo manejador = new ManejadorArchivo(openFileDialog.FileName);
-                manejador.Show();
-                this.Hide();
+                openFileDialog.Filter = "Archivos DAT (*.dat)|*.dat";
+                openFileDialog.Title = "Abrir archivo .dat";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    ManejadorArchivo manejador = new ManejadorArchivo(openFileDialog.FileName);
+                    manejador.Show();
+                    this.Hide();
+                }
             }
         }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Error al abrir el archivo: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        
         
     }
 

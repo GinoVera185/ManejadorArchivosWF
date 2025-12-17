@@ -16,6 +16,7 @@ namespace ManejadorArchivosWF
             Nombre = nombre;
             Tipo = tipo;
         }
+        /*
         public Type GetNetType()
         {
             return Tipo switch
@@ -26,6 +27,6 @@ namespace ManejadorArchivosWF
                 "Booleano" => typeof(bool),
                 _ => throw new InvalidOperationException("Tipo no soportado")
             };
-        }
+        }*/
     }
 }
