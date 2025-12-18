@@ -28,9 +28,9 @@ namespace ManejadorArchivosWF
             InitializeComponent();
             nombreArchivo = Archivo;
             lbl_NombreArchivo.Text = Path.GetFileName(Archivo);
-            CargarEstructura(Archivo); // Llama al método que ya tienes para cargar campos y registros
-            ConfigurarDataGridView(); // Configura las columnas del DataGridView
-            ActualizarDataGridView(); // Actualiza la tabla con los registros cargados
+            CargarEstructura(Archivo); 
+            ConfigurarDataGridView(); 
+            ActualizarDataGridView(); 
         }
 
         private void ManejadorArchivo_Load(object sender, EventArgs e)
@@ -110,7 +110,7 @@ namespace ManejadorArchivosWF
                 {
                     registros.Add(nuevoRegistro);
                     ActualizarDataGridView();
-                    GuardarArchivo(); // Opcional: guardar inmediatamente
+                    GuardarArchivo(); 
                 }
             }
         }
@@ -170,7 +170,7 @@ namespace ManejadorArchivosWF
             }
 
             ActualizarDataGridView();
-            GuardarArchivo(); // Opcional: guardar inmediatamente
+            GuardarArchivo(); 
         }
 
         private void btn_cerrar_Click(object sender, EventArgs e)

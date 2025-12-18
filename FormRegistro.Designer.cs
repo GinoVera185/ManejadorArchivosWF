@@ -59,8 +59,10 @@
             // 
             // FormRegistro
             // 
+            AcceptButton = btn_Aceptar;
             resources.ApplyResources(this, "$this");
             AutoScaleMode = AutoScaleMode.Font;
+            CancelButton = btn_Cancelar;
             Controls.Add(tbl_Registro);
             Controls.Add(btn_Cancelar);
             Controls.Add(btn_Aceptar);
